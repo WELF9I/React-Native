@@ -32,40 +32,27 @@ interface DataItemExtremeInc {
   mainCurrency: string;
   otherCurrencies: string;
 }
-interface DataItemCategory {
-  idCat : any; 
-  categoryName: string;
-  categoryImage: string;
-}
 interface DataItemCategory2 {
   key : string; 
   value: string;
   cselected?: boolean;
 }
 
-interface DataItemCurrency {
-  id : any; 
-  mainCurrency: string;
-  otherCurrencies: string;
-}
 interface StatItem{
   name: string;
   pourcentage: number;
 }
 const Statistics=() =>{
-  const [CurrenciesData, setCurrenciesData] = useState<DataItemCurrency[]>([]);
   const [isExpensesActive, setIsExpensesActive] = useState<boolean>(true);
   const [isIncomesActive, setIsIncomesActive] = useState<boolean>(false);    
   const [isYearlyActive, setIsYearlyActive] = useState<boolean>(true);
   const [isMonthlyActive, setIsMonthlyActive] =  useState<boolean>(false)
   const [incomesData, setIncomesData] = useState<DataItemExtremeInc[]>([]);
   const [expensesData, setExpensesData] = useState<DataItemExtreme[]>([]);
-  const [currencyData, setCurrencyData] = useState<DataItemCurrency[]>([]);
   const [categoryData, setCategoryData] = useState<DataItemCategory2[]>([]);
-
   const [StatExpensesData, setStatExpensesData] = useState<StatItem[]>([]);
   const [StatIncomesData, setStatIncomesData] = useState<StatItem[]>([]);
-
+  
   const db = Database();
 
   useEffect(() => {
@@ -103,19 +90,13 @@ const generateStatExpensesDataYearly = (expensesData: DataItemExtreme[]): StatIt
   expensesData.forEach((expense) => {
     const year = new Date(expense.dateExpense).getFullYear();
     const key = `${year}_${expense.categoryName}`;
-
     if (!statData[key]) {
       statData[key] = { totalAmount: 0, count: 0, categoryName: expense.categoryName };
     }
-
     statData[key].totalAmount += parseFloat(expense.amount);
     statData[key].count++;
   });
-
-
   const totalSum = Object.values(statData).reduce((sum, category) => sum + category.totalAmount, 0);
-
-  // Create statExpensesData with normalized percentages
   const statExpensesData: StatItem[] = Object.entries(statData).map(([key, value]) => ({
     name: value.categoryName,
     pourcentage: parseFloat((value.totalAmount / totalSum * 100).toFixed(1)) || 0,
@@ -127,42 +108,39 @@ const generateStatExpensesDataYearly = (expensesData: DataItemExtreme[]): StatIt
 // Monthly Expenses
 const generateStatExpensesDataMonthly = (expensesData: DataItemExtreme[]): StatItem[] => {
   const statData: { [key: string]: { totalAmount: number, count: number, categoryName: string } } = {};
+  const uniqueCategories = new Set<string>();
 
   expensesData.forEach((expense) => {
-    const date = new Date(expense.dateExpense);
-    const key = `${date.getFullYear()}_${date.getMonth() + 1}_${expense.categoryName}`;
+    const month = new Date(expense.dateExpense).getMonth() + 1; 
+    const key = `${month}_${expense.categoryName}`;
 
     if (!statData[key]) {
       statData[key] = { totalAmount: 0, count: 0, categoryName: expense.categoryName };
+      uniqueCategories.add(expense.categoryName);
     }
 
     statData[key].totalAmount += parseFloat(expense.amount);
     statData[key].count++;
   });
 
-  const uniqueCategories = new Set<string>();
-
-  expensesData.forEach((expense) => {
-    uniqueCategories.add(expense.categoryName);
-  });
-
   const totalSum = Array.from(uniqueCategories).reduce((sum, categoryName) => {
-    const key = `${new Date().getFullYear()}_${new Date().getMonth() + 1}_${categoryName}`;
+    const key = `${new Date().getMonth() + 1}_${categoryName}`;
     return sum + (statData[key]?.totalAmount || 0);
   }, 0);
 
   const statExpensesData: StatItem[] = Array.from(uniqueCategories).map((categoryName) => {
-    const key = `${new Date().getFullYear()}_${new Date().getMonth() + 1}_${categoryName}`;
+    const key = `${new Date().getMonth() + 1}_${categoryName}`;
     const value = statData[key];
 
     return {
       name: categoryName,
-      pourcentage: parseFloat(((value?.totalAmount / totalSum) * 100).toFixed(1)),
+      pourcentage: parseFloat((value?.totalAmount / totalSum * 100).toFixed(1)) || 0,
     };
   });
 
   return statExpensesData;
 };
+
 
 // Yearly Incomes
 const generateStatIncomesDataYearly = (incomesData: DataItemExtremeInc[]): StatItem[] => {
@@ -192,41 +170,39 @@ const generateStatIncomesDataYearly = (incomesData: DataItemExtremeInc[]): StatI
 // Monthly Incomes
 const generateStatIncomesDataMonthly = (incomesData: DataItemExtremeInc[]): StatItem[] => {
   const statData: { [key: string]: { totalAmount: number, count: number, categoryName: string } } = {};
+  const uniqueCategories = new Set<string>();
 
   incomesData.forEach((income) => {
-    const date = new Date(income.dateIncome);
-    const key = `${date.getFullYear()}_${date.getMonth() + 1}_${income.categoryName}`;
+    const month = new Date(income.dateIncome).getMonth() + 1; 
+    const key = `${month}_${income.categoryName}`;
 
     if (!statData[key]) {
       statData[key] = { totalAmount: 0, count: 0, categoryName: income.categoryName };
+      uniqueCategories.add(income.categoryName);
     }
 
     statData[key].totalAmount += parseFloat(income.amount);
     statData[key].count++;
   });
 
-  const uniqueCategories = new Set<string>();
-
-  incomesData.forEach((income) => {
-    uniqueCategories.add(income.categoryName);
-  });
-
   const totalSum = Array.from(uniqueCategories).reduce((sum, categoryName) => {
-    const key = `${new Date().getFullYear()}_${new Date().getMonth() + 1}_${categoryName}`;
+    const key = `${new Date().getMonth() + 1}_${categoryName}`;
     return sum + (statData[key]?.totalAmount || 0);
   }, 0);
+
   const statIncomesData: StatItem[] = Array.from(uniqueCategories).map((categoryName) => {
-    const key = `${new Date().getFullYear()}_${new Date().getMonth() + 1}_${categoryName}`;
+    const key = `${new Date().getMonth() + 1}_${categoryName}`;
     const value = statData[key];
 
     return {
       name: categoryName,
-      pourcentage: (value?.totalAmount / totalSum) * 100 || 0,
+      pourcentage: parseFloat((value?.totalAmount / totalSum * 100).toFixed(1)) || 0,
     };
   });
 
   return statIncomesData;
 };
+
 
   const displayExpensesTable= async () => {
     try {
@@ -557,10 +533,6 @@ const generateStatIncomesDataMonthly = (incomesData: DataItemExtremeInc[]): Stat
 };
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 24,
-    margin: 10,
-  },
   container: {
     alignItems: 'center',
     flexDirection: 'column',

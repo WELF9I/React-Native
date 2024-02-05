@@ -3,7 +3,6 @@ import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollVi
 import { SelectList } from 'react-native-dropdown-select-list';
 import ExpensesList from './ExpensesList';
 import Drawer from './Drawer';
-import { convert } from 'react-native-pdf-to-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DocumentPicker from 'react-native-document-picker';
 import Database from '../Database';
@@ -63,7 +62,7 @@ const Expenses = () => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const drawer = useRef<DrawerLayoutAndroid>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [result, setResult] = React.useState<string[]>([]);
+
   let MyPath:any[]=[]
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
@@ -159,24 +158,24 @@ const Expenses = () => {
     }
   };
   
-  const dropExpensesTable = async () => {
-    try {
-      await db.transaction(async (txn) => {
-        txn.executeSql(
-          `DROP TABLE IF EXISTS expenses;`,
-          [],
-          (tx, res) => {
-            console.log('Table expenses dropped successfully');
-          },
-          (error) => {
-            console.log('Error dropping table expenses ' + error);
-          }
-        );
-      });
-    } catch (error) {
-      console.error('Error dropping table expenses: ', error);
-    }
-  };
+  // const dropExpensesTable = async () => {
+  //   try {
+  //     await db.transaction(async (txn) => {
+  //       txn.executeSql(
+  //         `DROP TABLE IF EXISTS expenses;`,
+  //         [],
+  //         (tx, res) => {
+  //           console.log('Table expenses dropped successfully');
+  //         },
+  //         (error) => {
+  //           console.log('Error dropping table expenses ' + error);
+  //         }
+  //       );
+  //     });
+  //   } catch (error) {
+  //     console.error('Error dropping table expenses: ', error);
+  //   }
+  // };
 
   const showToastWithGravity = (text:string) => {
     ToastAndroid.showWithGravity(
@@ -327,25 +326,6 @@ const Expenses = () => {
     }
   };
   
-  const handleDocSelect = async () => {
-    try {
-      const docs = await DocumentPicker.pick({
-        type: DocumentPicker.types.pdf,
-        copyTo: 'cachesDirectory',
-      });
-      if (docs?.length) {
-        const uri = docs[0]?.fileCopyUri || '';
-        MyPath.push(uri);      
-        const images = await convert(uri);
-        if (images.outputFiles) {
-          setResult(images.outputFiles);
-        }
-      }
-      MyPath.push()
-    } catch (e) {
-      console.log(e);
-    }
-  };
 
   const AddPDF = async () => {
     try {
@@ -357,7 +337,6 @@ const Expenses = () => {
         const uri = docs[0]?.fileCopyUri || '';
         MyPath.push(uri);
         let ind=MyPath.indexOf(uri);
-        //console.log(ind);
         setPathPdf(uri);
         showToastWithGravity('PDF picked succesfully');
       }
@@ -623,18 +602,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Verdana',
     textAlign: 'center',
   },
-  categorieImage: {
-    width: 35,
-    height: 35,
-  },
   icons: {
     width: 35,
     height: 35,
-  },
-  iconDelete: {
-    width: 37,
-    height: 35,
-    marginLeft: '10%'
   },
   iconFolder: {
     width: 25,
@@ -645,18 +615,12 @@ const styles = StyleSheet.create({
   ShareMoneyDollar: {
     width: 30,
     height: 30,
-
     marginLeft: '17%',
     marginRight: '4%',
   },
   background: {
     height: 900,
-    backgroundColor: 'white',
-  },
-  image: {
-    width: 120,
-    height: 120,
-    margin: '5%',
+    backgroundColor: 'transparent',
   },
   button: {
     justifyContent: 'center',
@@ -676,11 +640,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 
-  arrowImage: {
-    width: 25,
-    height: 25,
-    marginLeft: '10%',
-  },
 });
 
 export default Expenses;

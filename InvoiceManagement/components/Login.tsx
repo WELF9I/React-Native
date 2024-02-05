@@ -1,12 +1,16 @@
-import React, { useState ,useEffect} from 'react'
+import React, { useState,useEffect } from 'react'
 import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import TouchID from 'react-native-touch-id';
 import Database from '../Database';
 
 const Login = () => {
+  const db = Database();
   const [auth,setAuth]=useState(false);
-  const [lien,setLien]=useState("");
+  const [isChecked, setIsChecked] = useState<boolean>(false);
+
+  useEffect(() => {displayWelcomeTable();},[])
+
     const optionalConfigObject = {
         title: 'Authentication Required', // Android
         imageColor: '#e00606', // Android
@@ -18,42 +22,49 @@ const Login = () => {
         unifiedErrors: false, // use unified error messages (default false)
         passcodeFallback: false, // iOS - allows the device to fall back to using the passcode, if faceid/touch is not available. this does not mean that if touchid/faceid fails the first few times it will revert to passcode, rather that if the former are not enrolled, then it will use the passcode.
     };
-    const handleBio=()=>{
-        navigation.navigate('Expenses');
 
-  }
-  const handleBio2=()=>{
+    const displayWelcomeTable = async () => {
+      try {
+        await db.transaction(async (txn) => {
+          const selectQuery = 'SELECT deviceLock FROM welcome where id=?;';
+          txn.executeSql(selectQuery, [1], (tx, res) => {
+            const rows = res.rows;
+            const data = rows.item(0);
+          if (data) {setIsChecked(data.deviceLock === 'true');}
+          });
+        });
+      } catch (error) {
+        console.error('Error displaying welcome table: ', error);
+      }
+    };
+
+  const handleLogin=() => {
+    isChecked == true ? handleBio() : navigation.navigate('Expenses');
+
+  };
+  const handleBio=()=>{
     TouchID.isSupported(optionalConfigObject)
     .then(biometryType => {
     // Success code
     if (biometryType === 'FaceID') {
         console.log('FaceID is supported.');
     } else {
-        console.log('TouchID is supported.');
         if(auth){
             return null;
         }
         TouchID.authenticate('',optionalConfigObject)
         .then((success: boolean | ((prevState: boolean) => boolean))=>{
             setAuth(success);
-            console.log('Success',success);
-            navigation.navigate('WelcomePage');
-            setLien("WelcomePage");
+            navigation.navigate('Expenses');
             
         })
         .catch((err: any)=>{
             console.log('Failed',err);
-            setLien("");
         })
     }
    })
 }
   const navigation = useNavigation();
-
-  const handlePress = () => {
-    navigation.navigate('WelcomePage');
-  };
-
   return (
     <SafeAreaView style={styles.background}>
       <SafeAreaView style={styles.container}>
@@ -61,7 +72,7 @@ const Login = () => {
         <View><Image source={require('../assets/fingerprint.png')} style={styles.image} /></View>
         <View><Text style={styles.text}>You can use the fingerprint sensor to login</Text></View>
         <View>
-          <TouchableOpacity style={styles.button} onPress={handleBio}>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </View>
@@ -123,3 +134,5 @@ const styles = StyleSheet.create({
 });
 
 export default Login;
+
+

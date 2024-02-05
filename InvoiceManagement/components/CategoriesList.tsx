@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -31,22 +31,22 @@ const CategoriesList: React.FC<{ categoriesData: DataItem[] }> = ({ categoriesDa
     setCategoriesData(categoriesData);
   }, [categoriesData]);
 
-  const displayCategoriesTable = async () => {
-    try {
-      await db.transaction(async (txn) => {
-        const selectQuery = 'SELECT idCat, name FROM categories;';
-        txn.executeSql(selectQuery, [], (tx, res) => {
-          const rows = res.rows;
-          for (let i = 0; i < rows.length; i++) {
-            const categorydata = rows.item(i);
-            console.log('Category Data - idCat:', categorydata.idCat, 'name:', categorydata.name);
-          }
-        });
-      });
-    } catch (error) {
-      console.error('Error displaying categories table: ', error);
-    }
-  };
+  // const displayCategoriesTable = async () => {
+  //   try {
+  //     await db.transaction(async (txn) => {
+  //       const selectQuery = 'SELECT idCat, name FROM categories;';
+  //       txn.executeSql(selectQuery, [], (tx, res) => {
+  //         const rows = res.rows;
+  //         for (let i = 0; i < rows.length; i++) {
+  //           const categorydata = rows.item(i);
+  //           //console.log('Category Data - idCat:', categorydata.idCat, 'name:', categorydata.name);
+  //         }
+  //       });
+  //     });
+  //   } catch (error) {
+  //     console.error('Error displaying categories table: ', error);
+  //   }
+  // };
 
   const showToastWithGravity = (text: string) => {
     ToastAndroid.showWithGravity(
@@ -62,7 +62,7 @@ const CategoriesList: React.FC<{ categoriesData: DataItem[] }> = ({ categoriesDa
         const deleteQuery = `DELETE FROM categories WHERE idCat = ?;`;
         await txn.executeSql(deleteQuery, [id], (tx, res) => {
           console.log('Category deleted successfully !');
-          displayCategoriesTable();
+          //displayCategoriesTable();
         });
       });
     } catch (error) {
@@ -84,12 +84,12 @@ const CategoriesList: React.FC<{ categoriesData: DataItem[] }> = ({ categoriesDa
       await db.transaction(async (txn) => {
         const updateQuery = `
           UPDATE categories
-          SET name = ?, categoryImage = ?
+          SET categoryName = ?, categoryImage = ?
           WHERE idCat = ?;
         `;
         await txn.executeSql(updateQuery, [name, categoryImage, id], (tx, res) => {
           console.log('Category updated successfully in the database');
-          displayCategoriesTable();
+          //displayCategoriesTable();
         });
       });
     } catch (error) {
@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
         width: 33,
         height: 33,
         borderRadius: 8,
+        marginLeft:5,
       },
     iconDelete: {
         width: 35,
@@ -250,7 +251,9 @@ const styles = StyleSheet.create({
       },
       cardContentColumn: {
         marginRight: '2%',
-        marginTop:'5%',
+        marginTop: '5%',
+        height:'70%',
+        width:'70%',
       },
       cardContentRow:{
         flexDirection: 'row',
@@ -278,44 +281,6 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: 'bold',
       },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    width: '90%',
-    height: 80,
-    marginHorizontal: '5%',
-    marginVertical: 10,
-    padding: 10,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  categoryName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  categoryImage: {
-    width: 50,
-    height: 50,
-  },
-  categoryButtons: {
-    flexDirection: 'row',
-  },
-
   modalContainer: {
     flex: 1,
     alignContent: 'center',

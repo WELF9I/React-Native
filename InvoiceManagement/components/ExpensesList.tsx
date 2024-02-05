@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Image, ScrollView, Text, Modal, TouchableOpacity, TextInput, Button, Platform, ToastAndroid } from 'react-native';
+import { StyleSheet, View, Image,Text, Modal, TouchableOpacity, TextInput, Button, Platform, ToastAndroid } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { convert } from 'react-native-pdf-to-image';
 import { SelectList } from 'react-native-dropdown-select-list';
@@ -7,16 +7,7 @@ import DocumentPicker from 'react-native-document-picker';
 import { formatCurrency} from "react-native-format-currency";
 import Database from '../Database';
 
-import Statistics from './Statistics';
 
-interface DataItem {
-  idExp:any;
-  idCurr:any;
-  category:any;
-  amount: string;
-  dateExpense: string;
-  pdfFile: string;
-}
 interface DataItemExtreme {
   idExp:any;
   idCurr:any;
@@ -29,22 +20,13 @@ interface DataItemExtreme {
   mainCurrency: string;
   otherCurrencies: string;
 }
-interface DataItemCategory {
-  idCat : any; 
-  categoryName: string;
-  categoryImage: string;
-}
+
 interface DataItemCategory2 {
   key : string; 
   value: string;
   cselected?: boolean;
 }
 
-interface DataItemCurrency {
-  id : any; 
-  mainCurrency: string;
-  otherCurrencies: string;
-}
 const ExpensesList: React.FC<{expensesData: DataItemExtreme[];CategoryData: DataItemCategory2[];showButtons: boolean;selectedCurrency:any }> = ({expensesData,CategoryData,showButtons,selectedCurrency}) => {
   const [CategoriesData2, setCategoriesData2] = useState<DataItemCategory2[]>([]);
   const [ExpensesData, setExpensesData] = useState<DataItemExtreme[]>([]);
@@ -107,23 +89,6 @@ const ExpensesList: React.FC<{expensesData: DataItemExtreme[];CategoryData: Data
     showToastWithGravity('Expense deleted successfully!');
   };
 
-  const updateExpenseInDatabase = async (idExp: any,idCat:any,idCurr:any,amount:string,dateExpense:string,pdfFile:string) => {
-    try {
-      await db.transaction(async (txn) => {
-        const updateQuery = `
-          UPDATE expenses
-          SET amount = ?, dateExpense = ?, pdfFile = ?, category = ?, idCurr = ?
-          WHERE idExp = ?;
-        `;
-        await txn.executeSql(updateQuery, [amount, dateExpense, pdfFile,idCat,idCurr,idExp], (tx, res) => {
-          console.log('Expense updated successfully in the database');
-          //displayExpensesTable();
-        });
-      });
-    } catch (error) {
-      console.error('Error updating expense: ', error);
-    }
-  };
 
   const handleSaveEditExpense = async () => {
     if (editedExpense) {
@@ -272,26 +237,36 @@ const ExpensesList: React.FC<{expensesData: DataItemExtreme[];CategoryData: Data
       setSelectedTime(selectedDate);
     }
   };
+  
 
   return (
       ExpensesData.map((expense: any, index: any) => (
         <View key={index} style={styles.cardContainer}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>{expense.categoryName}</Text>
+            <View style={styles.headerText}>
+              <Text style={styles.cardHeaderText}>{expense.categoryName}</Text>
+            </View>
             {showButtons && (
-
                 <TouchableOpacity onPress={() => handleViewPdf(expense.pdfFile)}>
-                  <Image source={require('../assets/viewIcon.png')} style={styles.icons} />
+                  <Image source={require('../assets/viewIcon.png')} style={styles.viewIcon} />
                 </TouchableOpacity>
             )}
             <Image source={{ uri: expense.categoryImage }} style={styles.SoftHardicons} />
           </View>
-  
+           
           <View style={styles.cardContent}>
             <View style={styles.cardContentColumn}>
-              <Text style={styles.cardContentText}>Amount: {formatCurrency({ amount: Number(expense.amount), code: expense.mainCurrency }).splice(0, 1)}</Text>
-              <Text style={styles.cardContentText}>DateTime: {expense.dateExpense}</Text>
-              <Text style={styles.cardContentText}>Currency: {expense.mainCurrency}</Text>
+              <Text style={styles.cardContentText}>
+                Amount : {formatCurrency({ amount: Number(expense.amount), code: expense.mainCurrency }).splice(0, 1) +' '+ '('+
+                        formatCurrency({ amount: Number(expense.amount), code: expense.otherCurrencies.substring(0,3) }).splice(0, 1)+' '+'| '+ 
+                        formatCurrency({ amount: Number(expense.amount), code: expense.otherCurrencies.substring(4,7) }).splice(0, 1)+' '+'| '+
+                        formatCurrency({ amount: Number(expense.amount), code: expense.otherCurrencies.substring(8,11) }).splice(0, 1)+
+                        
+                        ')'
+                        }
+              </Text>
+              <Text style={styles.cardContentText}>DateTime : {expense.dateExpense}</Text>
+              <Text style={styles.cardContentText}>Currency : {expense.mainCurrency}</Text>
             </View>
   
             {showButtons && (
@@ -305,7 +280,7 @@ const ExpensesList: React.FC<{expensesData: DataItemExtreme[];CategoryData: Data
               </View>
             )}
           </View>
-  
+          
           {/* PDF Display */}
           <Modal visible={pdfModalVisible} transparent animationType="slide">
             
@@ -435,9 +410,11 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor:'white',
     width: '90%',
-    height: 180,
+    height: 255,
     marginLeft: '5%',
-    marginTop: '2.5%',
+    marginTop: '2%',
+    marginBottom: '1%',
+    paddingBottom:'2.5%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -453,10 +430,12 @@ const styles = StyleSheet.create({
   cardHeader: {
     backgroundColor: '#D9D9D9',
     width: '100%',
-    height: '28%',
+    height: '25%',
     justifyContent: 'space-between',
     flexDirection: 'row',
-    padding: '2.5%',
+    paddingRight: '2.5%',
+    paddingLeft: '2.5%',
+    paddingTop: '3%',
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
   },
@@ -466,30 +445,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     
   },
+  headerText:{
+    height: '98%',
+    width: '48%',
+  },
   icons: {
     width: 33,
     height: 33,
+    marginLeft:'12%',
   },
   SoftHardicons: {
-    width: 38,
-    height: 38,
+    width: 45,
+    height: 45,
     borderRadius:40,
   },
   viewIcon: {
-    width: 25,
-    height: 25,
+    width: 33,
+    height: 33,
+    marginRight:'30%',
   },
   cardContent: {
     justifyContent: 'space-between',
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
   cardContentColumn: {
     marginRight: '2%',
-    marginTop: '5%',
+    marginTop: '4%',
   },
   cardContentRow:{
     flexDirection: 'row',
-    marginTop:'13%',
+    width:'100%',
+    alignItems:'center',
+    alignContent:'center',
+    justifyContent: 'center',
   },
   cardContentText: {
     color: 'black',
@@ -501,7 +489,6 @@ const styles = StyleSheet.create({
   iconDelete: {
     width: 35,
     height: 33,
-    marginLeft: '10%',
   },
   modalContainer: {
     flex: 1,

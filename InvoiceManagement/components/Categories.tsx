@@ -1,10 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
+import {Image,StyleSheet,Text,View,TouchableOpacity,
   SafeAreaView,
   ScrollView,
   DrawerLayoutAndroid,
@@ -31,7 +26,6 @@ const Categories = () => {
   const [addModalVisible, setAddModalVisible] = useState<boolean>(false);
   const [newName, setNewName] = useState<string>('');
   const [logoUri, setLogoUri] = useState<string>('');
-  const [isButtonImportSelect, setIsButtonImportSelect] = useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = React.useCallback(() => {
@@ -46,16 +40,6 @@ const Categories = () => {
   useEffect(() => {
     displayCategoriesTable();
   }, []);
-
-  // useEffect(() => {
-  //   db.transaction(() => {
-  //     console.log('Database opened');
-  //   });
-  //   return () => {
-  //     db.close();
-  //     console.log('Database closed');
-  //   };
-  // }, []);
 
   useEffect(() => {
     //dropCategoriesTable();
@@ -90,24 +74,25 @@ const Categories = () => {
       );
     });
   }, []);
-  const dropCategoriesTable = async () => {
-    try {
-      await db.transaction(async (txn) => {
-        txn.executeSql(
-          `DROP TABLE IF EXISTS categories;`,
-          [],
-          (tx, res) => {
-            console.log('Table categories dropped successfully');
-          },
-          (error) => {
-            console.log('Error dropping table categories ' + error);
-          }
-        );
-      });
-    } catch (error) {
-      console.error('Error dropping table categories: ', error);
-    }
-  };
+
+  // const dropCategoriesTable = async () => {
+  //   try {
+  //     await db.transaction(async (txn) => {
+  //       txn.executeSql(
+  //         `DROP TABLE IF EXISTS categories;`,
+  //         [],
+  //         (tx, res) => {
+  //           console.log('Table categories dropped successfully');
+  //         },
+  //         (error) => {
+  //           console.log('Error dropping table categories ' + error);
+  //         }
+  //       );
+  //     });
+  //   } catch (error) {
+  //     console.error('Error dropping table categories: ', error);
+  //   }
+  // };
 
   const showToastWithGravity = (text: string) => {
     ToastAndroid.showWithGravity(
@@ -118,7 +103,6 @@ const Categories = () => {
   };
 
   const handleButtonImportSelect = () => {
-    setIsButtonImportSelect(true);
     handleImageSelect();
   };
 
@@ -158,7 +142,6 @@ const Categories = () => {
             categoryImage: logoUri,
             idCat: undefined
           };
-          //setCategoriesData((prevCategoriesData) => [...prevCategoriesData, newCategory]);
           console.log('Category added successfully');
           displayCategoriesTable();
         });
@@ -355,18 +338,9 @@ const styles = StyleSheet.create({
       fontFamily: 'Verdana',
       marginLeft: '5%'
     },
-    categorieImage: {
-      width: 35,
-      height: 35,
-    },
     icons: {
       width: 35,
       height: 35,
-    },
-    iconDelete: {
-      width: 37,
-      height: 35,
-      marginLeft: '10%'
     },
     iconFolder: {
       width: 25,
@@ -377,18 +351,12 @@ const styles = StyleSheet.create({
     categoryIcon: {
       width: 25,
       height: 25,
-
       marginLeft: '17%',
       marginRight: '4%',
     },
     background: {
       height: 900,
-      backgroundColor: 'white',
-    },
-    image: {
-      width: 120,
-      height: 120,
-      margin: '5%',
+      backgroundColor: 'transparent',
     },
     button: {
       justifyContent: 'center',
@@ -406,12 +374,6 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
-    },
-  
-    arrowImage: {
-      width: 25,
-      height: 25,
-      marginLeft: '10%',
     },
   });
 export default Categories

@@ -1,12 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {Text, StyleSheet, View, SafeAreaView ,Image,TouchableOpacity,TouchableHighlight,} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Database from '../Database';
-
-interface DataItem {
-    name: string;
-    image: string;
-  }
 
   interface DrawerProps {
     closeDrawer: () => void
@@ -49,12 +44,6 @@ const Drawer=({ closeDrawer }: DrawerProps) =>{
         };
     
         fetchData();
-    
-        // return () => {
-        //   // Cleanup function
-        //   db.close();
-        //   console.log('Database closed');
-        // };
       }, []);
 
   const logoImage = welcomeData?.logo ? { uri: welcomeData.logo } : require('../assets/userLogo.png');

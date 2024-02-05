@@ -31,13 +31,13 @@ const WelcomePage = () => {
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
   const [logoUri, setLogoUri] = useState<any>();
   const [isChecked, setIsChecked] = useState<boolean>(false);
-  const [welcomeData, setWelcomeData] = useState<any>(null);
+  const [otherCurrencies, setOtherCurrencies] = useState<Currency[]>([]);
 
   const db = Database();
 
   useEffect(() => {
-    //dropWelcomeTable();
-    //console.log('table welcome deleted succeffully');
+    // dropWelcomeTable();
+    // console.log('table welcome deleted succeffully');
     db.transaction((txn) => {
       txn.executeSql(
         `SELECT name FROM sqlite_master WHERE type='table' AND name='welcome';`,
@@ -70,67 +70,38 @@ const WelcomePage = () => {
     });
   }, []);
 
-  const dropWelcomeTable = async () => {
-    try {
-      await db.transaction(async (txn) => {
-        txn.executeSql(
-          `DROP TABLE IF EXISTS welcome;`,
-          [],
-          (tx, res) => {
-            console.log('Table Welcome dropped successfully');
-          },
-          (error) => {
-            console.log('Error dropping table Welcome ' + error);
-          }
-        );
-      });
-    } catch (error) {
-      console.error('Error dropping table Welcome: ', error);
-    }
-  };
-
-  const DisplayWelcomeTable = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM welcome where id=1',
-        [],
-        (sqlTxn, res) => {
-          if (res.rows.length > 0) {
-            const rowData = res.rows.item(0);
-            //console.log('Fetched data:', rowData);
-            setWelcomeData(rowData);
-          }
-        },
-        (error) => {
-          console.log('Error fetching data from the database', error);
-        }
-      );
-    });
-  };
-
-  const handleSelectCurrencies = (item: Currency) => {
-    if (item && item.key) {
-      const updatedCurrencies = curr.map((currency) =>
-        currency.key === item.key
-          ? { ...currency, selected: !currency.selected }
-          : currency
-      );
-      const selected = updatedCurrencies
-        .filter((currency) => currency.selected)
-        .map((currency) => currency.value);
-      setSelectedCurrencies(selected);
-    }
-  };
+  // const dropWelcomeTable = async () => {
+  //   try {
+  //     await db.transaction(async (txn) => {
+  //       txn.executeSql(
+  //         `DROP TABLE IF EXISTS welcome;`,
+  //         [],
+  //         (tx, res) => {
+  //           console.log('Table Welcome dropped successfully');
+  //         },
+  //         (error) => {
+  //           console.log('Error dropping table Welcome ' + error);
+  //         }
+  //       );
+  //     });
+  //   } catch (error) {
+  //     console.error('Error dropping table Welcome: ', error);
+  //   }
+  // };
+  useEffect(() => {
+    const updatedOtherCurrencies = curr.filter(currency => currency.value !== selectedCurrency);
+    setOtherCurrencies(updatedOtherCurrencies);
+  }, [selectedCurrency]);
 
   const handleProceed = () => {
     if (!name || !selectedCurrency || selectedCurrencies.length === 0) {
       showToastWithGravity('Please fill in all required fields');
       return;
     }
-    console.log('selectedCurrencies : ', selectedCurrencies);
+    //console.log('selectedCurrencies : ', selectedCurrencies);
     const logoToInsert = logoUri? logoUri.toString() : "";
     const otherCurrencies = selectedCurrencies.join(',') || null;
-    console.log('otherCurrencies : ', otherCurrencies);
+    //console.log('otherCurrencies : ', otherCurrencies);
     db.transaction((tx) => {
       tx.executeSql(
         'INSERT OR REPLACE INTO welcome (id, name, logo, mainCurrency, otherCurrencies, deviceLock) VALUES (?, ?, ?, ?, ?, ?)',
@@ -143,8 +114,7 @@ const WelcomePage = () => {
           isChecked ? 'true' : 'false',
         ],
         (sqlTxn, res) => {
-          console.log('Data saved to the database');
-          DisplayWelcomeTable();
+          console.log("Data saved")
         },
         (error) => {
           console.log('Error saving data to the database', error);
@@ -204,14 +174,7 @@ const WelcomePage = () => {
           </View>
 
           <View style={{ width: '95%' }}>
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              value={name}
-              onChangeText={handleNameChange}
-              accessible={true}
-              accessibilityLabel="Name input"
-            />
+            <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={handleNameChange} accessible={true} accessibilityLabel="Name input"/>
           </View>
 
           <View style={{ width: '95%', marginBottom: '10%' }}>
@@ -265,9 +228,8 @@ const WelcomePage = () => {
             <MultipleSelectList
               setSelected={(val: any) => {
                 setSelectedCurrencies(val);
-                console.log(val);
               }}
-              data={curr}
+              data={otherCurrencies}
               placeholder='Other currencies'
               save="value"
               onSelect={() => { }}
@@ -313,7 +275,6 @@ const WelcomePage = () => {
               onValueChange={toggleIsChecked}
               thumbColor={isChecked ? '#FFFFFF' : '#FFFFFF'}
               trackColor={{ false: 'red', true: 'green' }}
-              style={{}}
             />
             <Text style={styles.textSwitch}>Enable device lock</Text>
           </View>
@@ -345,12 +306,6 @@ const styles = StyleSheet.create({
   background: {
     height: 900,
     backgroundColor: '#BD1839',
-  },
-  text: {
-    fontWeight: 'bold',
-    fontSize: 20,
-    color: '#FFFFFF',
-    textAlign: 'center',
   },
   image: {
     width: 130,

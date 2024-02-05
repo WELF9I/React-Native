@@ -61,9 +61,6 @@ const BasicChart : React.FC<{StatData: StatItem[]}> = ({StatData}) => {
         </View>
       );
     }
-    const series = coloredPieData.map((item) => item.value);
-    const sliceColor = coloredPieData.map((item) => item.color);
-
   return (
     <View style={{width: '100%', alignItems: 'flex-start', marginTop: '2%', height: '35%', justifyContent: 'flex-start', flexDirection: 'row' ,paddingLeft:10,marginBottom:'3%'}}>
       <PieChart

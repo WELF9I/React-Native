@@ -5,7 +5,6 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {useNavigation} from '@react-navigation/native';
 import Database from '../Database';
 
-interface SettingsProps {}
 interface Currency {
   [x: string]: any;
   key: string;
@@ -27,6 +26,7 @@ const Settings = () => {
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
   const [logoUri, setLogoUri] = useState<any>();
   const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [otherCurrencies, setOtherCurrencies] = useState<Currency[]>([]);
 
   const showToastWithGravity = (text:string) => {
     ToastAndroid.showWithGravity(
@@ -57,9 +57,12 @@ const Settings = () => {
         }
       );
     });
-
-
   }, []);
+
+  useEffect(() => {
+    const updatedOtherCurrencies = curr.filter(currency => currency.value !== selectedCurrency);
+    setOtherCurrencies(updatedOtherCurrencies);
+  }, [selectedCurrency]);
 
   const handleSaveSettings = () => {
     if (!name || !selectedCurrency || selectedCurrencies.length === 0) {
@@ -101,7 +104,6 @@ const Settings = () => {
     showToastWithGravity('Settings updated successfully!');
   };
   
-
   const handlePress = () => {
     navigation.goBack();
   };
@@ -109,23 +111,8 @@ const Settings = () => {
     setIsChecked(value => !value);
   };
 
-
   const handleNameChange = (text: string) => {
     setName(text);
-  };
-
-  const handleSelect = (item: Currency) => {
-    if (item && item.key) {
-      const updatedCurrencies = curr.map(currency =>
-        currency.key === item.key
-          ? {...currency, selected: !currency.selected}
-          : currency,
-      );
-      const selected = updatedCurrencies
-        .filter(currency => currency.selected)
-        .map(currency => currency.value);
-      setSelectedCurrencies(selected);
-    }
   };
   
   const handleUploadImage = async () => {
@@ -285,7 +272,7 @@ const Settings = () => {
           <View style={{width: '95%'}}>
             <MultipleSelectList
               setSelected={(val: any) => setSelectedCurrencies(val)}
-              data={curr}
+              data={otherCurrencies}
               placeholder="Other currencies"
               save="value"
               onSelect={() => {}}
@@ -460,11 +447,6 @@ const styles = StyleSheet.create({
     paddingBottom: '1.5%',
     paddingLeft: '3%',
     fontWeight: 'bold',
-  },
-  arrowImage: {
-    width: 25,
-    height: 25,
-    marginLeft: '10%',
   },
 });
 
