@@ -4,6 +4,7 @@ import { MultipleSelectList, SelectList } from 'react-native-dropdown-select-lis
 import ImagePicker from 'react-native-image-crop-picker';
 import { useNavigation } from '@react-navigation/native';
 import Database from '../Database';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 interface Currency {
   key: string;
@@ -181,7 +182,7 @@ const WelcomePage = () => {
             <SelectList
               data={curr}
               save="value"
-              placeholder='Main currencies'
+              placeholder='Main currency'
               setSelected={(val: any) => setSelectedCurrency(val)}
               boxStyles={{
                 borderRadius: 5,
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
   },
   background: {
-    height: 900,
+    height: hp('100%'),
     backgroundColor: '#BD1839',
   },
   image: {

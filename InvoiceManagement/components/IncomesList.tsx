@@ -232,173 +232,201 @@ const IncomesList: React.FC<{incomesData: DataItemExtreme[];CategoryData: DataIt
   };
 
   return (
-    IncomesData.map((income: any, index: any) => (
-      <View key={index} style={styles.cardContainer}>
-        <View style={styles.cardHeader}>
-          <View style={styles.headerText}>
-            <Text style={styles.cardHeaderText}>{income.categoryName}</Text>
-          </View>
-          {showButtons && (
-              <TouchableOpacity onPress={() => handleViewPdf(income.pdfFile)}>
-                <Image source={require('../assets/viewIcon.png')} style={styles.viewIcon} />
-              </TouchableOpacity>
-          )}
-          <Image source={{ uri: income.categoryImage }} style={styles.SoftHardicons} />
-        </View>
-         
-        <View style={styles.cardContent}>
-          <View style={styles.cardContentColumn}>
-            <Text style={styles.cardContentText}>
-              Amount : {formatCurrency({ amount: Number(income.amount), code: income.mainCurrency }).splice(0, 1) +' '+ '('+
-                      formatCurrency({ amount: Number(income.amount), code: income.otherCurrencies.substring(0,3) }).splice(0, 1)+' '+'| '+ 
-                      formatCurrency({ amount: Number(income.amount), code: income.otherCurrencies.substring(4,7) }).splice(0, 1)+' '+'| '+
-                      formatCurrency({ amount: Number(income.amount), code: income.otherCurrencies.substring(8,11) }).splice(0, 1)+
-                      
-                      ')'
-                      }
+    <View>
+      {IncomesData.length > 0 ? (
+        IncomesData.map((income: any, index: any) => (
+          <View key={index} style={styles.cardContainer}>
+            <View style={styles.cardHeader}>
+              <View style={styles.headerText}>
+                <Text style={styles.cardHeaderText}>{income.categoryName}</Text>
+              </View>
+              {showButtons && (
+                  <TouchableOpacity onPress={() => handleViewPdf(income.pdfFile)}>
+                    <Image source={require('../assets/viewIcon.png')} style={styles.viewIcon} />
+                  </TouchableOpacity>
+              )}
+              <Image source={{ uri: income.categoryImage }} style={styles.SoftHardicons} />
+            </View>
+             
+            <View style={styles.cardContent}>
+              <View style={styles.cardContentColumn}>
+              <Text style={styles.cardContentText}>
+                Amount : {formatCurrency({ amount: Number(income.amount), code: income.mainCurrency }).splice(0, 1)} {' ('}
+                {income.otherCurrencies.includes(',') ? (
+                    <>
+                        {income.otherCurrencies.split(',').map((currency:any, index:any) => (
+                            <React.Fragment key={index}>
+                                {formatCurrency({ amount: Number(income.amount), code: currency }).splice(0, 1)}
+                                {index !== income.otherCurrencies.split(',').length - 1 && ' | '}
+                            </React.Fragment>
+                        ))}
+                    </>
+                ) : (
+                    formatCurrency({ amount: Number(income.amount), code: income.otherCurrencies }).splice(0, 1)
+                )}
+                {')'}
             </Text>
-            <Text style={styles.cardContentText}>DateTime : {income.dateIncome}</Text>
-            <Text style={styles.cardContentText}>Currency : {income.mainCurrency}</Text>
-          </View>
-
-          {showButtons && (
-            <View style={styles.cardContentRow}>
-              <TouchableOpacity onPress={() => handleEditIncome(index)}>
-                <Image source={require('../assets/edit.png')} style={styles.icons} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDeleteIncome(income.idExp, index)} style={{ marginLeft: '2%' }}>
-                <Image source={require('../assets/delete.png')} style={styles.iconDelete} />
-              </TouchableOpacity>
+  
+  
+                <Text style={styles.cardContentText}>DateTime : {income.dateIncome}</Text>
+                <Text style={styles.cardContentText}>Currency : {income.mainCurrency}</Text>
+              </View>
+    
+              {showButtons && (
+                <View style={styles.cardContentRow}>
+                  <TouchableOpacity onPress={() => handleEditIncome(index)}>
+                    <Image source={require('../assets/edit.png')} style={styles.icons} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDeleteIncome(income.idExp, index)} style={{ marginLeft: '2%' }}>
+                    <Image source={require('../assets/delete.png')} style={styles.iconDelete} />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
-          )}
-        </View>
-        
-        {/* PDF Display */}
-        <Modal visible={pdfModalVisible} transparent animationType="slide">
-          
-          <View style={styles.modalContainer}>
-            {pdfImages.map((imgPath, imgIndex) => (
-              <View key={imgIndex} style={styles.imgContainer}>
-                <Image style={styles.image} source={{ uri: `file://${imgPath}` }} />
+            
+            {/* PDF Display */}
+            <Modal visible={pdfModalVisible} transparent animationType="slide">
+              
+              <View style={styles.modalContainer}>
+                {pdfImages.map((imgPath, imgIndex) => (
+                  <View key={imgIndex} style={styles.imgContainer}>
+                    <Image style={styles.image} source={{ uri: `file://${imgPath}` }} />
+                  </View>
+                ))}
+                <TouchableOpacity style={styles.closeButton} onPress={() => setPdfModalVisible(false)}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
               </View>
-            ))}
-            <TouchableOpacity style={styles.closeButton} onPress={() => setPdfModalVisible(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-
-        <Modal visible={editModalVisible} transparent animationType="slide">
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={{ color: 'black', fontWeight: 'bold', marginBottom: '20%', fontSize: 20, textAlign: 'center' }}>Edit income</Text>
-              <TextInput
-                placeholder="Amount"
-                value={editedAmount}
-                onChangeText={(text: any) => setEditedAmount(text)}
-                keyboardType="numeric"
-                style={{
-                  color:'white',
-                  paddingLeft: 15,
-                  height:44,
-                  backgroundColor: '#2196F5',
-                  borderRadius: 2,
-                  marginBottom: '5%',
-                  elevation: 5,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 3,
-                }}
-              />
-
-              <View style={{ marginBottom: 20,borderRadius:5 }}>
-                <Button title={formatDate(selectedDate)} onPress={showDatePickerVisible} />
-                {isDatePickerVisible && (
-                  <DateTimePicker value={selectedDate} mode="date" display="default" onChange={handleDateChange} />
-                )}
-              </View>
-
-              <View style={{ marginBottom: 20 }}>
-                <Button title={formatTime(selectedTime)} onPress={() => showTimePickerHandler()} />
-                {showTimePicker && (
-                  <DateTimePicker
-                    value={selectedTime}
-                    mode="time"
-                    is24Hour={true}
-                    display="default"
-                    onChange={handleTimeChange}
+            </Modal>
+    
+            <Modal visible={editModalVisible} transparent animationType="slide">
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={{ color: 'black', fontWeight: 'bold', marginBottom: '20%', fontSize: 20, textAlign: 'center' }}>Edit expense</Text>
+                  <TextInput
+                    placeholder="Amount"
+                    value={editedAmount}
+                    onChangeText={(text: any) => setEditedAmount(text)}
+                    keyboardType="numeric"
+                    style={{
+                      color:'white',
+                      paddingLeft: 15,
+                      height:44,
+                      backgroundColor: '#2196F5',
+                      borderRadius: 2,
+                      marginBottom: '5%',
+                      elevation: 5,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 3,
+                    }}
                   />
-                )}
+    
+                  <View style={{ marginBottom: 20,borderRadius:5 }}>
+                    <Button title={formatDate(selectedDate)} onPress={showDatePickerVisible} />
+                    {isDatePickerVisible && (
+                      <DateTimePicker value={selectedDate} mode="date" display="default" onChange={handleDateChange} />
+                    )}
+                  </View>
+    
+                  <View style={{ marginBottom: 20 }}>
+                    <Button title={formatTime(selectedTime)} onPress={() => showTimePickerHandler()} />
+                    {showTimePicker && (
+                      <DateTimePicker
+                        value={selectedTime}
+                        mode="time"
+                        is24Hour={true}
+                        display="default"
+                        onChange={handleTimeChange}
+                      />
+                    )}
+                  </View>
+    
+                  <SelectList
+                    data={CategoryData}
+                    save="key"
+                    placeholder='Category'
+                    setSelected={(key: any) => setSelectedIdCategory(key)}
+                    boxStyles={{
+                      borderRadius: 2,
+                      borderColor: '#2196F5',
+                      borderStyle: 'solid',
+                      backgroundColor: '#2196F5',
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                      elevation: 5,
+                      height: 44,
+                    }}
+                    inputStyles={{ color: 'white', fontWeight: 'bold', fontSize: 13, }}
+                    dropdownTextStyles={{ color: 'black', fontWeight: 'bold' }}
+                    badgeTextStyles={{ color: 'white', fontSize: 14 }}
+                    badgeStyles={{ backgroundColor: '#2196F5' }}
+                    labelStyles={{ color: 'black', fontWeight: 'bold' }}
+                    dropdownItemStyles={{
+                      backgroundColor: '#2196F5',
+                      marginHorizontal: 6
+                    }}
+                    dropdownStyles={{
+                      backgroundColor: '#2196F5',
+                      borderRadius: 8,
+                      borderColor: '#2196F5',
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 8,
+                      elevation: 5
+                    }}
+                  />
+    
+                  <TouchableOpacity style={styles.button} onPress={EditPDF}>
+                    <Text style={styles.buttonText} >Pick PDF</Text>
+                  </TouchableOpacity>
+    
+                  <View style={{ flexDirection: 'row', width: '100%', height: '20%', alignItems: 'center', justifyContent: 'space-around' }}>
+                    <TouchableOpacity onPress={handleSaveEditIncome} style={styles.SaveCancel}>
+                      <Text style={styles.SaveCancelText} >Save</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleCancelEdit} style={styles.SaveCancel}>
+                      <Text style={styles.SaveCancelText} >Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-
-              <SelectList
-                data={CategoryData}
-                save="key"
-                placeholder='Category'
-                setSelected={(key: any) => setSelectedIdCategory(key)}
-                boxStyles={{
-                  borderRadius: 2,
-                  borderColor: '#2196F5',
-                  borderStyle: 'solid',
-                  backgroundColor: '#2196F5',
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5,
-                  height: 44,
-                }}
-                inputStyles={{ color: 'white', fontWeight: 'bold', fontSize: 13, }}
-                dropdownTextStyles={{ color: 'black', fontWeight: 'bold' }}
-                badgeTextStyles={{ color: 'white', fontSize: 14 }}
-                badgeStyles={{ backgroundColor: '#2196F5' }}
-                labelStyles={{ color: 'black', fontWeight: 'bold' }}
-                dropdownItemStyles={{
-                  backgroundColor: '#2196F5',
-                  marginHorizontal: 6
-                }}
-                dropdownStyles={{
-                  backgroundColor: '#2196F5',
-                  borderRadius: 8,
-                  borderColor: '#2196F5',
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 8,
-                  elevation: 5
-                }}
-              />
-
-              <TouchableOpacity style={styles.button} onPress={EditPDF}>
-                <Text style={styles.buttonText} >Pick PDF</Text>
-              </TouchableOpacity>
-
-              <View style={{ flexDirection: 'row', width: '100%', height: '20%', alignItems: 'center', justifyContent: 'space-around' }}>
-                <TouchableOpacity onPress={handleSaveEditIncome} style={styles.SaveCancel}>
-                  <Text style={styles.SaveCancelText} >Save</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleCancelEdit} style={styles.SaveCancel}>
-                  <Text style={styles.SaveCancelText} >Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+              
+            </Modal>
           </View>
           
-        </Modal>
-      </View>
-      
-    ))
-);  
+        ))
+      ) : (
+        <View style={styles.noDataContainer}>
+          <Text style={styles.noDataText}>No data found</Text>
+        </View>
+      )}
+    </View>
+);
 };
 
 const styles = StyleSheet.create({
+  noDataContainer: {
+    marginTop:'20%',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noDataText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'gray',
+  },
 cardContainer: {
   backgroundColor:'white',
   width: '90%',

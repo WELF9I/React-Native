@@ -3,6 +3,7 @@ import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'r
 import { useNavigation } from '@react-navigation/native';
 import TouchID from 'react-native-touch-id';
 import Database from '../Database';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const Login = () => {
   const db = Database();
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
   },
   background: {
-    height: 900,
+    height: hp('100%'),
     backgroundColor: '#BD1839',
   },
   text: {

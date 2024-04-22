@@ -12,6 +12,7 @@ import Drawer from './Drawer';
 import CategoriesList from './CategoriesList';
 import ImagePicker from 'react-native-image-crop-picker';
 import Database from '../Database';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 interface DataItem {
   idCat : any; 
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
       flexDirection: 'column',
       marginTop: '9%',
       width: '100%',
-      height: '75%',
+      height: '90%',
       alignContent: 'center',
     },
     SaveCancel: {
@@ -355,10 +356,11 @@ const styles = StyleSheet.create({
       marginRight: '4%',
     },
     background: {
-      height: 900,
+      height: hp('100%'),
       backgroundColor: 'transparent',
     },
     button: {
+      marginLeft:'5%',
       justifyContent: 'center',
       flexDirection: 'row',
       width: '45%',
