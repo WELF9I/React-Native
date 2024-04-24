@@ -25,7 +25,7 @@ interface DataItemCategory2 {
   key: string;
   value: string;
   cselected?: boolean;
-}
+}  
 
 const ExpensesList: React.FC<{ expensesData: DataItemExtreme[]; CategoryData: DataItemCategory2[]; showButtons: boolean; selectedCurrency: any }> = ({ expensesData, CategoryData, showButtons, selectedCurrency }) => {
   const [CategoriesData2, setCategoriesData2] = useState<DataItemCategory2[]>([]);
@@ -43,11 +43,35 @@ const ExpensesList: React.FC<{ expensesData: DataItemExtreme[]; CategoryData: Da
   const [selectedIdCategory, setSelectedIdCategory] = useState<any>();
   const [selectedIdCurrency, setSelectedIdCurrency] = useState<any>();
   const [exchangeRates, setExchangeRates] = useState<any>({});
-  // const [apiMainCurrency, setApiMainCurrency] = useState<string>('');
+  const [maincurrency, setmaincurrency] = useState<string>('');
 
   let MyPath: any[] = [];
   const db = Database();
 
+  const DefineMainCurrency = () => {
+    ExpensesData.forEach((expense: DataItemExtreme) => {
+      console.log("Expense mainCurrency:", expense.mainCurrency);
+      if (expense.mainCurrency && expense.mainCurrency !== '') {
+        setmaincurrency(expense.mainCurrency);
+        return;
+      }
+    });
+  };
+
+  useEffect(() => {
+    DefineMainCurrency();
+  }, [ExpensesData]); 
+  
+  useEffect(() => {
+    if (maincurrency) {
+      fetchExchangeRates(); 
+    }
+  }, [maincurrency]); 
+
+  useEffect(() => {
+    setExpensesData(expensesData);
+  }, [expensesData]);
+  
   useEffect(() => {
     setCategoriesData2(CategoryData);
   }, [CategoryData]);
@@ -56,37 +80,38 @@ const ExpensesList: React.FC<{ expensesData: DataItemExtreme[]; CategoryData: Da
     setSelectedIdCurrency(selectedCurrency);
   }, [selectedCurrency]);
 
-  useEffect(() => {
-    setExpensesData(expensesData);
-  }, [expensesData]);
-
-  useEffect(() => {
-    fetchExchangeRates();
-  }, []);
 
   const fetchExchangeRates = async () => {
     try {
-      let res:string= 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/TND';
-      const response1 : string = 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/TND';
-      const response2 : string = 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/USD';
-      const response3 : string = 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/EUR';
-      const response4 : string = 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/GBP';
-      expensesData.map((expense: any, index: any) => {
-      expense.mainCurrency==='TND'? res=response1 :expense.mainCurrency==='USD'?  res=response2 : expense.mainCurrency==='EUR'?  res=response3: res=response4;});
-      console.log("response :",res);
-      const API=await axios.get(res);
+      const currencyUrls: {
+        [key: string]: string; 
+        GBP: string;
+        USD: string;
+        EUR: string;
+        default: string;
+    } = {
+        GBP: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/GBP',
+        USD: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/USD',
+        EUR: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/EUR',
+        default: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/TND'
+    };
+    console.log("Expense mainCurrency:",maincurrency);
+      const res = currencyUrls[maincurrency] || currencyUrls.default;
+      console.log("response :", res);
+      const API = await axios.get(res);
       setExchangeRates(API.data.conversion_rates);
     } catch (error) {
       console.error('Error fetching exchange rates: ', error);
     }
   };
+  
 
   const convertToOtherCurrencies = (amount: number, currency: string): string => {
     const rate = exchangeRates[currency];
     if (rate) {
       const convertedAmount = amount * rate;
       return formatCurrency({ amount: convertedAmount, code: currency })[0].toString();
-    }
+    }  
     return '';
   };
 
