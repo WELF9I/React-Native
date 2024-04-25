@@ -57,7 +57,7 @@ const ExpensesList: React.FC<{ expensesData: DataItemExtreme[]; CategoryData: Da
       }
     });
   };
-
+    
   useEffect(() => {
     DefineMainCurrency();
   }, [ExpensesData]); 
@@ -90,10 +90,10 @@ const ExpensesList: React.FC<{ expensesData: DataItemExtreme[]; CategoryData: Da
         EUR: string;
         default: string;
     } = {
-        GBP: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/GBP',
-        USD: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/USD',
-        EUR: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/EUR',
-        default: 'https://v6.exchangerate-api.com/v6/2ff7bfdb8aef1afcbd9faa09/latest/TND'
+        GBP: 'https://v6.exchangerate-api.com/v6/ffd4028a14d09abe8c6bf367/latest/GBP',
+        USD: 'https://v6.exchangerate-api.com/v6/ffd4028a14d09abe8c6bf367/latest/USD',
+        EUR: 'https://v6.exchangerate-api.com/v6/ffd4028a14d09abe8c6bf367/latest/EUR',
+        default: 'https://v6.exchangerate-api.com/v6/ffd4028a14d09abe8c6bf367/latest/TND'
     };
     console.log("Expense mainCurrency:",maincurrency);
       const res = currencyUrls[maincurrency] || currencyUrls.default;
@@ -110,10 +110,15 @@ const ExpensesList: React.FC<{ expensesData: DataItemExtreme[]; CategoryData: Da
     const rate = exchangeRates[currency];
     if (rate) {
       const convertedAmount = amount * rate;
-      return formatCurrency({ amount: convertedAmount, code: currency })[0].toString();
+      const amountString = convertedAmount.toString();
+      const commaIndex = amountString.indexOf('.');
+      const firstDigitAfterComma = amountString.substring(commaIndex + 1, commaIndex + 3);
+      const formattedAmount = amountString.substring(0, commaIndex + 1) + firstDigitAfterComma;
+      return formatCurrency({ amount: Number(formattedAmount), code: currency })[0].toString();
     }  
     return '';
   };
+  
 
   const showToastWithGravity = (text: string) => {
     ToastAndroid.showWithGravity(
